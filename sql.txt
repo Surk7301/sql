@@ -1,0 +1,80 @@
+CREATE TABLE Underwriter (
+    UnderwriterId INT AUTO_INCREMENT PRIMARY KEY,
+    Name VARCHAR(255) NOT NULL,
+    DOB DATE NOT NULL,
+    JoiningDate DATE NOT NULL,
+    DefaultPassword VARCHAR(255) NOT NULL
+);
+
+INSERT INTO Underwriter (Name, DOB, JoiningDate, DefaultPassword)
+VALUES 
+('Suraj', '1980-05-15', '2023-01-01', 'default123'),
+('Jane Smith', '1985-08-25', '2023-02-15', 'password456');
+
+CREATE TABLE Insurance (
+    PolicyNo INT AUTO_INCREMENT PRIMARY KEY,
+    VehicleNo VARCHAR(50) NOT NULL,
+    VehicleType VARCHAR(20) NOT NULL,
+    CustomerName VARCHAR(255) NOT NULL,
+    EngineNo INT NOT NULL,
+    ChasisNo INT NOT NULL,
+    PhoneNo BIGINT CHECK (PhoneNo >= 1000000000 AND PhoneNo <= 9999999999),
+    Type VARCHAR(20) NOT NULL,
+    PremiumAmt DECIMAL(10, 2) GENERATED ALWAYS AS (
+        CASE 
+            WHEN Type = 'Full Insurance' THEN 1000.00 
+            WHEN Type = 'ThirdParty' THEN 500.00 
+        END
+    ) STORED,
+    FromDate DATE NOT NULL,
+    ToDate DATE GENERATED ALWAYS AS (FromDate + INTERVAL 1 YEAR) STORED,
+    UnderwriterId INT NOT NULL,
+    FOREIGN KEY (UnderwriterId) REFERENCES Underwriter(UnderwriterId)
+);
+
+INSERT INTO Insurance (VehicleNo, VehicleType, CustomerName, EngineNo, ChasisNo, PhoneNo, Type, FromDate, UnderwriterId)
+VALUES 
+('AB1234 CD', '4-wheeler', 'Alice Brown', 123456, 654321, 9876543210, 'Full Insurance', '2023-03-01', 1),
+('EF5678 GH', '2-wheeler', 'Bob White', 789012, 210987, 8765432109, 'ThirdParty', '2023-04-01', 1),
+('IJ9012 KL', '4-wheeler', 'Charlie Green', 345678, 876543, 7654321098, 'Full Insurance', '2023-05-01', 2),
+('MN3456 OP', '2-wheeler', 'David Black', 901234, 432109, 6543210987, 'ThirdParty', '2023-06-01', 2);
+
+SELECT 
+    VehicleNo,
+    VehicleType,
+    CustomerName,
+    EngineNo,
+    ChasisNo,
+    PhoneNo,
+    Type,
+    PremiumAmt,
+    FromDate,
+    ToDate,
+    UnderwriterId
+FROM Insurance
+WHERE PolicyNo = 1;
+
+SELECT 
+    UnderwriterId,
+    COUNT(*) AS NumberOfVehicles
+FROM Insurance
+GROUP BY UnderwriterId;
+
+SELECT 
+    VehicleNo,
+    VehicleType,
+    CustomerName,
+    EngineNo,
+    ChasisNo,
+    PhoneNo,
+    Type,
+    PremiumAmt,
+    FromDate,
+    ToDate,
+    UnderwriterId
+FROM Insurance
+WHERE ToDate < CURRENT_DATE;
+
+
+DELETE FROM Underwriter
+WHERE UnderwriterId = 1;
